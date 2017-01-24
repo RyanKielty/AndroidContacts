@@ -1,5 +1,8 @@
 package com.theironyard.androidcontacts;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -10,13 +13,15 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemLongClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemLongClickListener, AdapterView.OnItemClickListener {
     ArrayAdapter<String> contactsList;
 
     ListView contacts;
     EditText contactName;
     EditText contactPhoneNumber;
     Button addContact;
+
+    static final int CONTACT_PAGE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         addContact.setOnClickListener(this);
         contacts.setOnItemLongClickListener(this);
+
+        contacts.setOnItemClickListener(this);
     }
 
     @Override
@@ -48,8 +55,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        String individualContact = contactsList.getItem(position);
-        contactsList.remove(individualContact);
+        final String individualContact = contactsList.getItem(position);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("To Do");
+        builder.setMessage("Are you sure you want to remove this contact?");
+        builder.setPositiveButton(android.R.string.ok, new AlertDialog.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                contactsList.remove(individualContact);
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, new AlertDialog.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //do nothing here
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
         return true;
+    }
+
+    @Override
+    public void onItemClick (AdapterView<?> adapterView, View view, int position, long id) {
+        Intent intent = new Intent(this, ContactPage.class);
+        intent.putExtra("contactname", contactsList.getItem(position));
+        intent.putExtra("position", position);
+
+        startActivityForResult(intent, CONTACT_PAGE);
     }
 }
